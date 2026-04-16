@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+resolve_script_dir() {
+  local src="${BASH_SOURCE[0]}"
+  while [ -L "$src" ]; do
+    local dir
+    dir="$(cd -P "$(dirname "$src")" && pwd)"
+    src="$(readlink "$src")"
+    [[ "$src" != /* ]] && src="$dir/$src"
+  done
+  cd -P "$(dirname "$src")" && pwd
+}
+
+SCRIPT_DIR="$(resolve_script_dir)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+DB="$REPO_ROOT/qmd/index.sqlite"
+ARCHIVE="$REPO_ROOT/qmd/index.sqlite.zst"
+
+export QMD_CONFIG_DIR="$REPO_ROOT/qmd"
+export INDEX_PATH="$DB"
+
+cd "$REPO_ROOT"
+mkdir -p qmd/external qmd/external/filecoin-data-portal
+
+run_qmd() {
+  if command -v qmd >/dev/null 2>&1; then
+    qmd "$@"
+    return
+  fi
+  if command -v npx >/dev/null 2>&1; then
+    npx -y @tobilu/qmd "$@"
+    return
+  fi
+  echo "error: need either 'qmd' or 'npx' in PATH" >&2
+  exit 1
+}
+
+if ! command -v sqlite3 >/dev/null 2>&1; then
+  echo "error: sqlite3 is required to checkpoint and vacuum the published index" >&2
+  exit 1
+fi
+
+if ! command -v zstd >/dev/null 2>&1; then
+  echo "error: zstd is required to publish the compressed index" >&2
+  exit 1
+fi
+
+run_qmd update
+run_qmd embed --chunk-strategy auto
+sqlite3 "$DB" 'PRAGMA wal_checkpoint(TRUNCATE); VACUUM;'
+zstd -q -f -19 -o "$ARCHIVE" "$DB"
+
+ls -lh "$DB" "$ARCHIVE"
