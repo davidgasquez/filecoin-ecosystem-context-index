@@ -1,0 +1,48 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.13"
+# dependencies = [
+#   "huggingface-hub>=0.30",
+# ]
+# ///
+import os
+from pathlib import Path
+
+from huggingface_hub import HfApi
+from huggingface_hub.errors import HfHubHTTPError
+
+root = Path(__file__).resolve().parents[1]
+env_file = root / ".env"
+if env_file.is_file():
+    for line in env_file.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+repo_id = os.environ.get("HF_DATASET_ID", "davidgasquez/filecoin-docs-qmd")
+db = root / "qmd" / "index.sqlite"
+if not db.is_file():
+    raise SystemExit(
+        "error: qmd/index.sqlite not found; run ./scripts/build-index first"
+    )
+
+api = HfApi()
+try:
+    api.create_repo(repo_id=repo_id, repo_type="dataset", exist_ok=True)
+    api.upload_file(
+        path_or_fileobj=db,
+        path_in_repo="index.sqlite",
+        repo_id=repo_id,
+        repo_type="dataset",
+        commit_message="Update qmd index",
+    )
+except HfHubHTTPError as error:
+    if error.response.status_code in {401, 403}:
+        raise SystemExit(
+            "error: HuggingFace auth failed. Create/use a Write token with repo access, "
+            f"then set HF_TOKEN in .env. Target dataset: {repo_id}"
+        ) from error
+    raise
+print(f"Uploaded {db} to dataset {repo_id}:index.sqlite")

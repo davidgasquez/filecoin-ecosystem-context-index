@@ -2,7 +2,7 @@ collections:
   fdp:
     path: qmd/external/filecoin-data-portal
     pattern: "{**/*.{md,py,sql,toml,yml,yaml,json},**/Makefile,**/AGENTS.md}"
-    update: "[ -d .git ] && git pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/filecoin-data-portal.git ."
+    update: "[ -d .git ] && git pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/davidgasquez/filecoin-data-portal.git ."
     context:
       "": FDP codebase for a minimal Filecoin open data platform, including orchestration code, assets, tests, and repository-specific documentation.
 

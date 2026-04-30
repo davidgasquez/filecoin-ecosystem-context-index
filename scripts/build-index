@@ -15,7 +15,6 @@ resolve_script_dir() {
 SCRIPT_DIR="$(resolve_script_dir)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 DB="$REPO_ROOT/qmd/index.sqlite"
-ARCHIVE="$REPO_ROOT/qmd/index.sqlite.zst"
 
 export QMD_CONFIG_DIR="$REPO_ROOT/qmd"
 export INDEX_PATH="$DB"
@@ -41,14 +40,8 @@ if ! command -v sqlite3 >/dev/null 2>&1; then
   exit 1
 fi
 
-if ! command -v zstd >/dev/null 2>&1; then
-  echo "error: zstd is required to publish the compressed index" >&2
-  exit 1
-fi
-
 run_qmd update
 run_qmd embed --chunk-strategy auto
 sqlite3 "$DB" 'PRAGMA wal_checkpoint(TRUNCATE); VACUUM;'
-zstd -q -f -19 -o "$ARCHIVE" "$DB"
 
-ls -lh "$DB" "$ARCHIVE"
+ls -lh "$DB"

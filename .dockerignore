@@ -1,5 +1,7 @@
+.git
 .env
-qmd/external/
+.ruff_cache
+qmd/external
 qmd/index.sqlite
 qmd/index.sqlite-shm
 qmd/index.sqlite-wal

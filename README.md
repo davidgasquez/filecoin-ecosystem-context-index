@@ -1,51 +1,83 @@
 # filecoin-docs-qmd
 
-Prebuilt `qmd` index with an assortment of Filecoin related resources.
+Hosted QMD MCP server for Filecoin docs/code search.
 
-## Install
+## Use the MCP server
 
-Download the published SQLite DB into QMD's default cache path:
+Endpoint:
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/davidgasquez/filecoin-docs-qmd/main/install.sh | bash
+```text
+https://davidgasquez-filecoin-docs-qmd-mcp.hf.space/mcp
 ```
 
-That installs the index as:
+Claude Code:
 
 ```bash
-~/.cache/qmd/filecoin.sqlite
+claude mcp add --transport http filecoin-docs-qmd \
+  https://davidgasquez-filecoin-docs-qmd-mcp.hf.space/mcp
 ```
 
-Then use plain `qmd`:
+Codex CLI:
 
 ```bash
-qmd --index filecoin search "storage provider"
-qmd --index filecoin query "how does lotus handle deal onboarding"
-qmd --index filecoin get "qmd://fdp/AGENTS.md"
-qmd --index filecoin search "batch onboarding" --collection builtin-actors
+codex mcp add filecoin-docs-qmd \
+  --url https://davidgasquez-filecoin-docs-qmd-mcp.hf.space/mcp
 ```
 
-`--index filecoin` selects the published DB. `--collection ...` filters within that DB.
+Health check:
+
+```bash
+curl https://davidgasquez-filecoin-docs-qmd-mcp.hf.space/health
+```
 
 ## Maintainer workflow
 
-Rebuild the artifact:
+Build the local QMD index:
 
 ```bash
-./scripts/build-index
+make build
 ```
 
-That will:
+Publish `qmd/index.sqlite` to the HuggingFace Dataset:
 
-1. clone or pull the configured source repos into `qmd/external/`
-2. run `qmd update`
-3. run `qmd embed --chunk-strategy auto`
-4. checkpoint + vacuum the SQLite DB
-5. refresh `qmd/index.sqlite.zst`
-6. upload the `.zst` artifact to your chosen URL
+```bash
+make publish
+```
 
-## Notes
+Deploy the Docker Space:
 
-- The distributed DB is self-contained for search and retrieval.
-- `qmd query` and `qmd vsearch` still need QMD's local models on user machines.
-- `FILECOIN_DOCS_QMD_INDEX_URL` can override the default published URL if needed.
+```bash
+make deploy
+```
+
+Defaults:
+
+```text
+HF_DATASET_ID=davidgasquez/filecoin-docs-qmd
+HF_DATASET_REVISION=main
+HF_SPACE_ID=davidgasquez/filecoin-docs-qmd-mcp
+```
+
+Override them inline or in `.env`.
+
+## Local Docker
+
+```bash
+make docker
+make run
+curl http://localhost:7860/health
+```
+
+Local MCP endpoint:
+
+```text
+http://localhost:7860/mcp
+```
+
+## Local QMD
+
+```bash
+QMD_CONFIG_DIR="$PWD/qmd" INDEX_PATH="$PWD/qmd/index.sqlite" qmd search "storage provider"
+QMD_CONFIG_DIR="$PWD/qmd" INDEX_PATH="$PWD/qmd/index.sqlite" qmd query "how does lotus handle deal onboarding"
+QMD_CONFIG_DIR="$PWD/qmd" INDEX_PATH="$PWD/qmd/index.sqlite" qmd get "qmd://fdp/AGENTS.md"
+```
