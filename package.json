@@ -1,0 +1,28 @@
+{
+  "name": "filoscope",
+  "version": "0.1.0",
+  "description": "Query a prebuilt Filecoin ecosystem QMD index.",
+  "type": "module",
+  "bin": {
+    "filoscope": "bin/filoscope.js"
+  },
+  "files": [
+    "bin/",
+    "README.md",
+    "SPEC.md"
+  ],
+  "scripts": {
+    "test": "node bin/filoscope.js --help"
+  },
+  "dependencies": {
+    "@tobilu/qmd": "2.5.3"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davidgasquez/filecoin-ecosystem-context-index.git"
+  },
+  "license": "MIT"
+}

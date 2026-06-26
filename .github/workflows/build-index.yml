@@ -1,0 +1,99 @@
+name: Build QMD index
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-qmd-index
+  cancel-in-progress: false
+
+jobs:
+  build-index:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y sqlite3
+
+      - name: Install package dependencies
+        run: npm ci
+
+      - name: Cache QMD models
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/qmd/models
+          key: qmd-models-${{ runner.os }}-${{ hashFiles('.qmd/index.yml', 'package-lock.json') }}
+          restore-keys: |
+            qmd-models-${{ runner.os }}-
+
+      - name: Initialize collections
+        env:
+          GIT_LFS_SKIP_SMUDGE: "1"
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --recursive --depth 1
+          git submodule update --remote --recursive --depth 1
+
+      - name: Build index
+        env:
+          QMD_FORCE_CPU: "1"
+        run: |
+          npx qmd update
+          npx qmd embed --chunk-strategy auto
+          npx qmd cleanup
+          sqlite3 .qmd/index.sqlite 'PRAGMA wal_checkpoint(TRUNCATE); VACUUM;'
+          mkdir -p dist
+          gzip -c .qmd/index.sqlite > dist/filoscope.sqlite.gz
+
+      - name: Verify index package
+        env:
+          QMD_FORCE_CPU: "1"
+          XDG_CACHE_HOME: ${{ runner.temp }}/filoscope-cache
+          XDG_CONFIG_HOME: ${{ runner.temp }}/filoscope-config
+        run: |
+          mkdir -p "$XDG_CACHE_HOME/qmd"
+          cp .qmd/index.sqlite "$XDG_CACHE_HOME/qmd/filoscope.sqlite"
+          printf 'workflow-local\n' > "$XDG_CACHE_HOME/qmd/filoscope.release-tag.txt"
+          node bin/filoscope.js status --format json
+          node bin/filoscope.js search 'FIP-0081' -c fips -n 1 --format json
+          npx qmd --index filoscope search 'FIP-0081' -c fips -n 1 --json
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: filoscope.sqlite.gz
+          path: dist/filoscope.sqlite.gz
+          if-no-files-found: error
+
+      - name: Publish GitHub Release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="index-$(date -u +%F)"
+          notes="Daily Filecoin ecosystem QMD index built from ${GITHUB_SHA}."
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" dist/filoscope.sqlite.gz#filoscope.sqlite.gz --clobber
+          else
+            gh release create "$tag" dist/filoscope.sqlite.gz#filoscope.sqlite.gz \
+              --title "$tag" \
+              --notes "$notes" \
+              --latest
+          fi

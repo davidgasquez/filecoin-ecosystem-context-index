@@ -1,76 +1,64 @@
 collections:
   fdp:
-    path: .qmd/external/filecoin-data-portal
+    path: collections/filecoin-data-portal
     pattern: "{**/*.{md,py,sql,toml,yml,yaml,json},**/Makefile,**/AGENTS.md}"
-    update: "[ -d .git ] && git pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/davidgasquez/filecoin-data-portal.git ."
     context:
-      "": The Filecoin open data platform, including orchestration code, assets, tests, repository-specific documentation and context around datasets, models and ecosystem metrics.
+      "/": Filecoin Data Portal codebase for a local-first DuckDB and Python pipeline indexing Filecoin datasets, asset metadata, tests, docs, and web publishing for network metrics, providers, clients, verified claims, DataCap, FEVM logs, Filecoin Pay, PDP, and warm storage.
   builtin-actors:
-    path: .qmd/external
-    pattern: "{builtin-actors/**/*.{md,rs,sol,fe,eas,sh,toml,yml,yaml,json},builtin-actors/**/Makefile,builtin-actors/**/Dockerfile}"
-    update: "[ -d builtin-actors/.git ] && git -C builtin-actors pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/builtin-actors.git builtin-actors"
+    path: collections/builtin-actors
+    pattern: "{**/*.{md,rs,sol,fe,eas,sh,toml,yml,yaml,json},**/Makefile,**/Dockerfile}"
     context:
-      "": Filecoin builtin actors source of truth, including actor implementations, state transitions, and protocol-level behavior.
+      "/": Canonical Rust implementation of Filecoin built-in actors for FVM networks, covering actor state and methods, runtime utilities, test VM and integration tests, Wasm compilation, CARv1 manifests, storage miner, storage market, EVM actor, and release workflows.
   lotus:
-    path: .qmd/external
-    pattern: "{lotus/**/*.{md,go,sol,sql,sh,bash,py,asm,template,tmpl,html,css,service,conf,toml,yml,yaml,json},lotus/**/Makefile,lotus/**/Dockerfile,lotus/**/go.mod,lotus/GO_VERSION_MIN,lotus/scripts/bash-completion/lotus,lotus/scripts/zsh-completion/lotus,lotus/scripts/dev/drop-local-repos,lotus/scripts/dev/gen-daemon,lotus/scripts/dev/sminer-init,lotus/scripts/mkreleaselog}"
-    update: "[ -d lotus/.git ] && git -C lotus pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/lotus.git lotus"
+    path: collections/lotus
+    pattern: "{**/*.{md,go,sol,sql,sh,bash,py,asm,template,tmpl,html,css,service,conf,toml,yml,yaml,json},**/Makefile,**/Dockerfile,**/go.mod,GO_VERSION_MIN,scripts/bash-completion/lotus,scripts/zsh-completion/lotus,scripts/dev/drop-local-repos,scripts/dev/gen-daemon,scripts/dev/sminer-init,scripts/mkreleaselog}"
     context:
-      "": Lotus reference Filecoin client implementation, including chain logic, APIs, node behavior, markets, storage, and operational documentation.
+      "/": Go implementation of Filecoin Lotus node, miner, worker, and gateway, including chain sync and validation, FVM state execution, message pool, storage sealing and proving, APIs, CLI, Ethereum compatibility, F3 finality, indexing, monitoring, releases, and integration tests.
   lily:
-    path: .qmd/external
-    pattern: "{lily/**/*.{md,go,sql,sh,template,tpl,mod,env,toml,yml,yaml,json},lily/**/Makefile,lily/deployment/.env.example,lily/scripts/fiximports,lily/build/grafana/config.monitoring}"
-    update: "[ -d lily/.git ] && git -C lily pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/lily.git lily"
+    path: collections/lily
+    pattern: "{**/*.{md,go,sql,sh,template,tpl,mod,env,toml,yml,yaml,json},**/Makefile,deployment/.env.example,scripts/fiximports,build/grafana/config.monitoring}"
     context:
-      "": Lily data extraction and indexing code for Filecoin, including tasks, schemas, models, chain data processing, and dataset-oriented documentation.
+      "/": Instrumented Lotus-based Filecoin indexer source covering chain walking, tipset watching, actor state extraction, messages, receipts, gas economics, FEVM transactions, traces, contracts, TimescaleDB schemas and migrations, CSV storage, network surveys, and deployment operations tooling.
   forest:
-    path: .qmd/external
-    pattern: "{forest/**/*.{md,mdx,rs,go,sh,js,ts,tsx,css,rb,py,sol,proto,tpl,toml,yml,yaml,json,dockerfile},forest/**/Makefile,forest/**/go.mod,forest/**/go.work,forest/**/Dockerfile*}"
-    update: "[ -d forest/.git ] && git -C forest pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/ChainSafe/forest.git forest"
+    path: collections/forest
+    pattern: "{**/*.{md,mdx,rs,go,sh,js,ts,tsx,css,rb,py,sol,proto,tpl,toml,yml,yaml,json,dockerfile},**/Makefile,**/go.mod,**/go.work,**/Dockerfile*}"
     context:
-      "": Forest Filecoin client implementation in Rust, including node behavior, chain sync, state management, RPC, tooling, and operational documentation.
+      "/": Rust Filecoin node collection covering Forest daemon, CLI, wallet, tool binaries, JSON-RPC, OpenRPC APIs, chain sync and validation, FVM state execution and migrations, libp2p networking, snapshots, CAR storage, Ethereum compatibility, F3 sidecar, monitoring, tests, CI, and docs.
   filecoin-docs:
-    path: .qmd/external
-    pattern: "{filecoin-docs/**/*.{md,mdx,ts,js,mjs,sh,json,toml,yml,yaml},filecoin-docs/**/Makefile}"
-    update: "[ -d filecoin-docs/.git ] && git -C filecoin-docs pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/filecoin-docs.git filecoin-docs"
+    path: collections/filecoin-docs
+    pattern: "{**/*.{md,mdx,ts,js,mjs,sh,json,toml,yml,yaml},**/Makefile}"
     context:
-      "": Official Filecoin documentation covering concepts, protocol details, tooling, and user/developer guides.
+      "/": Documentation for Filecoin network concepts, storage and retrieval workflows, FVM and FEVM smart-contract development, Filecoin Onchain Cloud, Synapse SDK, storage-provider operations, networks, FIL assets, JSON-RPC APIs, built-in actors, and ecosystem tools.
   fips:
-    path: .qmd/external
-    pattern: "{fips/**/*.{md,go,sh,py,ipynb,json,toml,yml,yaml},fips/**/Makefile}"
-    update: "[ -d fips/.git ] && git -C fips pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/filecoin-project/FIPs.git fips"
+    path: collections/fips
+    pattern: "{**/*.{md,go,sh,py,ipynb,json,toml,yml,yaml},**/Makefile}"
     context:
-      "": Filecoin Improvement Proposals and Filecoin Runtime Component specs, including accepted and draft protocol changes, standards, rationale, and proposal process docs.
+      "/": Filecoin Improvement Proposal records covering FIPs and FRCs for protocol changes, governance process, standards, network upgrades, storage-market economics, FVM and FEVM behavior, consensus, proofs, node APIs, and proposal lifecycle metadata from draft through final.
   filecoin-services:
-    path: .qmd/external
-    pattern: "{filecoin-services/**/*.{md,sol,sh,js,jq,toml,yml,yaml,json},filecoin-services/**/Makefile,filecoin-services/.gitmodules}"
-    update: "[ -d filecoin-services/.git ] && git -C filecoin-services pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/filecoin-services.git filecoin-services"
+    path: collections/filecoin-services
+    pattern: "{**/*.{md,sol,sh,js,jq,toml,yml,yaml,json},**/Makefile,.gitmodules}"
     context:
-      "": Filecoin Onchain Cloud repository for onchain programmable services, centered on smart contracts, deployment tooling, tests, specs, and operational docs for warm storage and related services.
+      "/": Smart contracts, specifications, ABI artifacts, deployment addresses, tests, and runbooks for Filecoin Warm Storage Service, covering PDP proof validation, FilecoinPay rails, USDFC pricing, CDN and FilBeam settlement, provider registry, StateView extsload access, UUPS upgrades, and releases.
   porep-market:
-    path: .qmd/external
-    pattern: "{porep-market/**/*.{md,sol,sh,py,toml,yml,yaml,json},porep-market/**/Makefile,porep-market/**/justfile,porep-market/**/remappings.txt,porep-market/**/.env.example}"
-    update: "[ -d porep-market/.git ] && git -C porep-market pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/fidlabs/porep-market.git porep-market"
+    path: collections/porep-market
+    pattern: "{**/*.{md,sol,sh,py,toml,yml,yaml,json},**/Makefile,**/justfile,**/remappings.txt,**/.env.example}"
     context:
-      "": FIDLabs PoRep Market smart contracts and tooling, including Solidity sources, tests, deployment scripts, ABIs, and documentation for storage-provider deal allocation and validation workflows.
+      "/": Solidity and Foundry contracts plus V2 specs for PoRep Market, covering Filecoin storage deal orchestration, storage-provider offer matching and capacity, DataCap and VerifReg evidence adapters, SLI validation, FilecoinPay validator settlement, deployments, ABIs, tests, and V1 reference snapshot.
   filecoin-pay:
-    path: .qmd/external
-    pattern: "{filecoin-pay/**/*.{md,sol,sh,toml,yml,yaml,json},filecoin-pay/**/Makefile,filecoin-pay/.gitmodules}"
-    update: "[ -d filecoin-pay/.git ] && git -C filecoin-pay pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/filecoin-pay.git filecoin-pay"
+    path: collections/filecoin-pay
+    pattern: "{**/*.{md,sol,sh,toml,yml,yaml,json},**/Makefile,.gitmodules}"
     context:
-      "": Filecoin Onchain Cloud payment rails and settlement contracts, including Solidity sources, tests, specs, audits references, and deployment tooling for Filecoin Pay.
+      "/": Solidity and Foundry implementation and documentation for FilecoinPayV1 payment rails on Filecoin, covering ERC20 and FIL account funding, operator approvals, lockup accounting, rate changes, one-time payments, validator arbitration, settlement, termination, fees, deployments, audits, and tests.
   synapse-sdk:
-    path: .qmd/external
-    pattern: "{synapse-sdk/**/*.{md,mdx,ts,tsx,js,mjs,astro,html,css,json,jsonc,webmanifest,toml,yml,yaml},synapse-sdk/**/Makefile,synapse-sdk/**/AGENTS.md,synapse-sdk/**/_headers}"
-    update: "[ -d synapse-sdk/.git ] && git -C synapse-sdk pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/synapse-sdk.git synapse-sdk"
+    path: collections/synapse-sdk
+    pattern: "{**/*.{md,mdx,ts,tsx,js,mjs,astro,html,css,json,jsonc,webmanifest,toml,yml,yaml},**/Makefile,**/AGENTS.md,**/_headers}"
     context:
-      "": Filecoin Onchain Cloud JavaScript and React SDK monorepo for Synapse, including packages, examples, docs site content, and developer workflows.
+      "/": TypeScript and JavaScript monorepo and docs for Synapse SDK, Core, and React packages integrating Filecoin Onchain Cloud storage, Filecoin Pay, Warm Storage, PDP verification, provider discovery, PieceCID handling, session keys, examples, and playground apps.
   pdp:
-    path: .qmd/external
-    pattern: "{pdp/**/*.{md,sol,sh,toml,yml,yaml,json},pdp/**/Makefile,pdp/**/configure,pdp/.gitmodules}"
-    update: "[ -d pdp/.git ] && git -C pdp pull --ff-only || GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --single-branch --no-tags https://github.com/FilOzone/pdp.git pdp"
+    path: collections/pdp
+    pattern: "{**/*.{md,sol,sh,toml,yml,yaml,json},**/Makefile,**/configure,.gitmodules}"
     context:
-      "": Filecoin Onchain Cloud provable data possession contracts and tools, including verifier and service contracts, tests, deployment scripts, and design documentation.
+      "/": Solidity contracts, tests, deployment scripts, and design notes for Filecoin Provable Data Possession, covering PDPVerifier data sets, Piece CID v2 handling, Merkle possession proofs, challenge randomness, proving periods, fault reporting, gas benchmarks, upgrades, and cleanup deposits.
 models:
   embed: hf:ggml-org/embeddinggemma-300M-GGUF/embeddinggemma-300M-Q8_0.gguf
   generate: hf:tobil/qmd-query-expansion-1.7B-gguf/qmd-query-expansion-1.7B-q4_k_m.gguf
