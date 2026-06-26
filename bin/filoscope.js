@@ -21,7 +21,7 @@ const DB_FILE = `${INDEX_NAME}.sqlite`;
 const TAG_FILE = `${INDEX_NAME}.release-tag.txt`;
 const DEFAULT_MULTI_GET_MAX_BYTES = 64 * 1024;
 const DEFAULT_INDEX_URL =
-  "https://github.com/davidgasquez/filecoin-ecosystem-context-index/releases/latest/download/filoscope.sqlite.gz";
+  "https://github.com/davidgasquez/filoscope/releases/latest/download/filoscope.sqlite.gz";
 
 const USAGE = `filoscope
 

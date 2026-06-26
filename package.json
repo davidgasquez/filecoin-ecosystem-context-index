@@ -22,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/davidgasquez/filecoin-ecosystem-context-index.git"
+    "url": "git+https://github.com/davidgasquez/filoscope.git"
   },
   "license": "MIT"
 }
