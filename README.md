@@ -7,12 +7,12 @@ Search Filecoin docs and code from a prebuilt QMD index.
 ## Use
 
 ```bash
-npx filoscope pull
-npx filoscope status
 npx filoscope search '"FIP-0081"' -c fips -n 5
 npx filoscope query "how does Filecoin storage power work"
 npx filoscope get '#4cb064:1:40'
 ```
+
+The first command that needs the index downloads it automatically. Use `npx filoscope pull --force` to refresh the cached index explicitly.
 
 Use `search` for exact terms and `query` for broader questions. Fetch source text with `get` before making claims.
 

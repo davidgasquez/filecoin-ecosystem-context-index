@@ -10,7 +10,7 @@ import {
   stat,
   writeFile,
 } from "node:fs/promises";
-import { homedir, tmpdir } from "node:os";
+import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { pipeline } from "node:stream/promises";
 import { createGunzip } from "node:zlib";
@@ -87,17 +87,18 @@ async function main() {
   }
 }
 
-async function pull(flags) {
+async function pull(flags, options = {}) {
+  const log = options.log ?? console.log;
   const paths = cachePaths(flags);
   const force = Boolean(flags.force);
 
   if (!force && await exists(paths.dbPath)) {
-    console.log(`Already cached: ${paths.dbPath}`);
+    log(`Already cached: ${paths.dbPath}`);
     return;
   }
 
   await mkdir(paths.cacheDir, { recursive: true });
-  const tempDir = await mkdtemp(join(tmpdir(), "filoscope-"));
+  const tempDir = await mkdtemp(join(paths.cacheDir, ".filoscope-"));
   const gzPath = join(tempDir, `${DB_FILE}.gz`);
   const sqlitePath = join(tempDir, DB_FILE);
 
@@ -117,7 +118,7 @@ async function pull(flags) {
     const tag = releaseTagFromUrl(response.url);
     if (tag) await writeFile(paths.tagPath, `${tag}\n`, "utf8");
 
-    console.log(`Cached ${paths.dbPath}`);
+    log(`Cached ${paths.dbPath}`);
   } finally {
     await rm(tempDir, { recursive: true, force: true });
   }
@@ -202,7 +203,7 @@ async function multiGet(positionals, flags) {
 async function withStore(flags, callback) {
   const paths = cachePaths(flags);
   if (!await exists(paths.dbPath)) {
-    throw new Error("Run filoscope pull first");
+    await pull(flags, { log: (message) => console.error(message) });
   }
 
   const store = await createStore({ dbPath: paths.dbPath });
