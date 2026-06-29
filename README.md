@@ -1,10 +1,10 @@
-# filoscope
+# Filoscope 🔭
 
 Search Filecoin docs and code from a prebuilt QMD index.
 
 `filoscope` is a small `npx` CLI for grounded Filecoin ecosystem search without cloning every source repo. It downloads the latest compressed SQLite index from this repo's GitHub Releases, stores it where QMD expects a named index, and queries it through the QMD SDK.
 
-## Use
+## 🚀 Use
 
 ```bash
 npx filoscope search '"FIP-0081"' -c fips -n 5
@@ -24,7 +24,7 @@ npx filoscope query -c fdp $'intent: Find how an FDP dataset is built.\nlex: raw
 npx filoscope multi-get 'fips/FIPS/*.md' -l 80 --format md
 ```
 
-## Cache
+## 💾 Cache
 
 Default cache paths:
 
@@ -46,7 +46,7 @@ That makes the same index usable with QMD:
 qmd --index filoscope search '"FIP-0081"' -c fips -n 5
 ```
 
-## Local Development
+## 🛠️ Local Development
 
 ```bash
 npm install
@@ -62,7 +62,7 @@ printf 'manual-local\n' > /tmp/filoscope-cache/qmd/filoscope.release-tag.txt
 XDG_CACHE_HOME=/tmp/filoscope-cache node bin/filoscope.js status
 ```
 
-## Build The Index
+## 🧱 Build The Index
 
 The source collections are git submodules under `collections/`, and `.qmd/index.yml` is the QMD config.
 
@@ -75,7 +75,7 @@ make release
 
 `make release` writes `dist/filoscope.sqlite.gz`.
 
-## Release
+## 📦 Release
 
 `.github/workflows/build-index.yml` runs daily and supports manual dispatch. It restores the latest release index, updates it, rejects incomplete embeddings, uploads a workflow artifact, and publishes `filoscope.sqlite.gz` to the `index-YYYY-MM-DD` GitHub Release.
 
