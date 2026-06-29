@@ -19,9 +19,10 @@ import { createStore } from "@tobilu/qmd";
 const INDEX_NAME = "filoscope";
 const DB_FILE = `${INDEX_NAME}.sqlite`;
 const TAG_FILE = `${INDEX_NAME}.release-tag.txt`;
+const ASSET_NAME = `${INDEX_NAME}.sqlite.gz`;
 const DEFAULT_MULTI_GET_MAX_BYTES = 64 * 1024;
-const DEFAULT_INDEX_URL =
-  "https://github.com/davidgasquez/filoscope/releases/latest/download/filoscope.sqlite.gz";
+const DEFAULT_RELEASE_API_URL =
+  "https://api.github.com/repos/davidgasquez/filoscope/releases/latest";
 
 const USAGE = `filoscope
 
@@ -91,10 +92,14 @@ async function pull(flags, options = {}) {
   const log = options.log ?? console.log;
   const paths = cachePaths(flags);
   const force = Boolean(flags.force);
+  const release = await latestRelease();
 
   if (!force && await exists(paths.dbPath)) {
-    log(`Already cached: ${paths.dbPath}`);
-    return;
+    const currentTag = (await readOptional(paths.tagPath))?.trim();
+    if (!release.tag || currentTag === release.tag) {
+      log(`Already current: ${paths.dbPath}`);
+      return;
+    }
   }
 
   await mkdir(paths.cacheDir, { recursive: true });
@@ -103,8 +108,7 @@ async function pull(flags, options = {}) {
   const sqlitePath = join(tempDir, DB_FILE);
 
   try {
-    const url = String(process.env.FILOSCOPE_INDEX_URL || DEFAULT_INDEX_URL);
-    const response = await fetch(url, { redirect: "follow" });
+    const response = await fetch(release.url, { redirect: "follow" });
     if (!response.ok || !response.body) {
       throw new Error(`Download failed: ${response.status} ${response.statusText}`);
     }
@@ -115,13 +119,39 @@ async function pull(flags, options = {}) {
     await rename(sqlitePath, paths.dbPath);
     await writeQmdConfig(paths.dbPath, flags);
 
-    const tag = releaseTagFromUrl(response.url);
+    const tag = release.tag ?? releaseTagFromUrl(response.url);
     if (tag) await writeFile(paths.tagPath, `${tag}\n`, "utf8");
 
     log(`Cached ${paths.dbPath}`);
   } finally {
     await rm(tempDir, { recursive: true, force: true });
   }
+}
+
+async function latestRelease() {
+  const overrideUrl = process.env.FILOSCOPE_INDEX_URL;
+  if (overrideUrl) return { url: String(overrideUrl) };
+
+  const response = await fetch(DEFAULT_RELEASE_API_URL, {
+    headers: {
+      accept: "application/vnd.github+json",
+      "user-agent": INDEX_NAME,
+    },
+  });
+  if (!response.ok) {
+    throw new Error(`Latest release lookup failed: ${response.status} ${response.statusText}`);
+  }
+
+  const release = await response.json();
+  const tag = release.tag_name ? String(release.tag_name) : undefined;
+  const asset = Array.isArray(release.assets)
+    ? release.assets.find((item) => item.name === ASSET_NAME)
+    : undefined;
+
+  if (!tag) throw new Error("Latest release response missing tag_name");
+  if (!asset?.browser_download_url) throw new Error(`Latest release missing asset: ${ASSET_NAME}`);
+
+  return { tag, url: String(asset.browser_download_url) };
 }
 
 async function searchLex(positionals, flags) {
