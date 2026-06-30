@@ -14,7 +14,7 @@ Always:
 
 1. Search for candidate documents.
 2. Retrieve full source text with `get` or `multi-get`.
-3. Write a grounded Filecoin answer from retrieved text, tracking docids/`qmd://` paths and exact line ranges during research.
+3. Write a grounded Filecoin answer from retrieved context.
 
 Do not answer from snippets alone when the user needs facts, decisions, quotes, APIs, specs, or nuance. Snippets are only leads.
 
@@ -25,7 +25,7 @@ npx -y filoscope search '"FIP-0081"' -c fips -n 5
 npx -y filoscope get '#4cb064:1:40'
 ```
 
-Final answers cite GitHub line URLs when a source maps through [`.gitmodules`](https://raw.githubusercontent.com/davidgasquez/filoscope/refs/heads/main/.gitmodules); otherwise cite the `qmd://` path and line range. Treat docids as retrieval handles, not preferred final citations.
+Final answers cite GitHub line URLs when a source maps through [`.gitmodules`](https://raw.githubusercontent.com/davidgasquez/filoscope/refs/heads/main/.gitmodules). Never cite in `qmd://` style. Treat docids as retrieval handles, not preferred final citations.
 
 Map `qmd://` sources with `.gitmodules` as the source of truth:
 
