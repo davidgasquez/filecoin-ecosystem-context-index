@@ -14,6 +14,7 @@ const INDEX_NAME = "filoscope";
 const DB_FILE = `${INDEX_NAME}.sqlite`;
 const TAG_FILE = `${INDEX_NAME}.release-tag.txt`;
 const ASSET_NAME = `${INDEX_NAME}.sqlite.gz`;
+const DEFAULT_MULTI_GET_MAX_BYTES = 64 * 1024;
 const DEFAULT_RELEASE_API_URL =
   "https://api.github.com/repos/davidgasquez/filoscope/releases/latest";
 
@@ -31,7 +32,6 @@ Primary commands:
   filoscope multi-get <pattern>       Batch fetch by glob or comma-separated list
   filoscope ls [collection[/path]]    Inspect indexed files
   filoscope status                    Show index and collection health
-  filoscope mcp                       Start an MCP server for agents
 
 Query examples:
   filoscope query "how does Filecoin storage power work"
@@ -89,6 +89,10 @@ async function main() {
     return;
   }
 
+  if (parsed.forwardArgs[0] === "mcp") {
+    throw new Error("filoscope mcp is not supported; use the CLI commands instead.");
+  }
+
   if (parsed.refreshOnly || (parsed.force && parsed.forwardArgs.length === 0)) {
     await ensureIndex({ force: true });
     return;
@@ -140,9 +144,20 @@ function parseWrapperArgs(args) {
 
 async function ensureIndex({ force = false } = {}) {
   const paths = cachePaths();
-  const release = await latestRelease();
+  const hasCachedDb = await exists(paths.dbPath);
+  let release;
 
-  if (!force && await exists(paths.dbPath)) {
+  try {
+    release = await latestRelease();
+  } catch (error) {
+    if (force || !hasCachedDb) throw error;
+    console.error(`Warning: ${error instanceof Error ? error.message : String(error)}`);
+    console.error(`Using cached index at ${paths.dbPath}`);
+    await ensureQmdConfig(paths.dbPath, false);
+    return;
+  }
+
+  if (!force && hasCachedDb) {
     const currentTag = (await readOptional(paths.tagPath))?.trim();
     if (currentTag === release.tag) {
       await ensureQmdConfig(paths.dbPath, false);
@@ -170,6 +185,11 @@ async function ensureIndex({ force = false } = {}) {
     await ensureQmdConfig(paths.dbPath, true);
 
     console.error(`Cached ${paths.dbPath}`);
+  } catch (error) {
+    if (force || !hasCachedDb) throw error;
+    console.error(`Warning: ${error instanceof Error ? error.message : String(error)}`);
+    console.error(`Using cached index at ${paths.dbPath}`);
+    await ensureQmdConfig(paths.dbPath, false);
   } finally {
     await rm(tempDir, { recursive: true, force: true });
   }
@@ -245,10 +265,11 @@ async function verifySqlite(dbPath) {
 
 async function runQmd(args) {
   const qmdBin = qmdBinPath();
-  const qmdArgs = [qmdBin, "--index", INDEX_NAME, ...args];
+  const qmdArgs = [qmdBin, "--index", INDEX_NAME, ...forwardArgs(args)];
+  const env = qmdEnv();
 
   await new Promise((resolvePromise, reject) => {
-    const child = spawn(process.execPath, qmdArgs, { stdio: "inherit" });
+    const child = spawn(process.execPath, qmdArgs, { env, stdio: "inherit" });
 
     child.on("exit", (code, signal) => {
       if (signal) {
@@ -266,6 +287,15 @@ async function runQmd(args) {
 function qmdBinPath() {
   const qmdEntry = fileURLToPath(import.meta.resolve("@tobilu/qmd"));
   return resolve(dirname(qmdEntry), "..", "bin", "qmd");
+}
+
+function forwardArgs(args) {
+  if (args[0] !== "multi-get" || hasOption(args, "--max-bytes")) return args;
+  return [...args, "--max-bytes", String(DEFAULT_MULTI_GET_MAX_BYTES)];
+}
+
+function hasOption(args, name) {
+  return args.some((arg) => arg === name || arg.startsWith(`${name}=`));
 }
 
 function cachePaths() {
@@ -291,6 +321,13 @@ function isMetadataCommand(args) {
     || args.includes("--version")
     || args.includes("-v")
     || args[0] === "help";
+}
+
+function qmdEnv() {
+  return {
+    ...process.env,
+    INDEX_PATH: cachePaths().dbPath,
+  };
 }
 
 function cleanObject(object) {

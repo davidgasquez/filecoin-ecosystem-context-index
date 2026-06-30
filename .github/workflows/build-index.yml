@@ -124,7 +124,7 @@ jobs:
           mkdir -p "$XDG_CACHE_HOME/qmd"
           cp .qmd/index.sqlite "$XDG_CACHE_HOME/qmd/filoscope.sqlite"
 
-          node bin/filoscope.js status
+          npx qmd --index filoscope status
           node --input-type=module <<'NODE'
           import { createStore } from "@tobilu/qmd";
 
@@ -138,7 +138,7 @@ jobs:
           if (vectorCount === 0) throw new Error("Index has no vectors");
           NODE
 
-          node bin/filoscope.js search Filecoin -n 1 --format json > "${RUNNER_TEMP}/search.json"
+          npx qmd --index filoscope search Filecoin -n 1 --format json > "${RUNNER_TEMP}/search.json"
           node --input-type=module - "${RUNNER_TEMP}/search.json" <<'NODE'
           import { readFileSync } from "node:fs";
           const results = JSON.parse(readFileSync(process.argv[2], "utf8"));
