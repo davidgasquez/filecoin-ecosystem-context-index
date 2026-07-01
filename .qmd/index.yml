@@ -4,6 +4,11 @@ collections:
     pattern: "{**/*.{md,py,sql,toml,yml,yaml,json},**/Makefile,**/AGENTS.md}"
     context:
       "/": Filecoin Data Portal codebase for a local-first DuckDB and Python pipeline indexing Filecoin datasets, asset metadata, tests, docs, and web publishing for network metrics, providers, clients, verified claims, DataCap, FEVM logs, Filecoin Pay, PDP, and warm storage.
+  dealbot:
+    path: collections/dealbot
+    pattern: "{**/*.{md,ts,tsx,js,mjs,html,css,graphql,sh,toml,yml,yaml,json,jsonc},**/Makefile,**/Dockerfile*,**/.env.example,**/.npmrc}"
+    context:
+      "/": TypeScript monorepo for Deal Bot, an automated Filecoin PDP deal creation and performance monitoring system, covering NestJS backend APIs and workers, pg-boss scheduling, provider checks, retrieval testing, metrics, Postgres persistence, Synapse wallet and contract integration, Graph Protocol subgraph indexing, React/Vite dashboard, deployment docs, runbooks, and production operations.
   builtin-actors:
     path: collections/builtin-actors
     pattern: "{**/*.{md,rs,sol,fe,eas,sh,toml,yml,yaml,json},**/Makefile,**/Dockerfile}"

@@ -37,3 +37,6 @@
 [submodule "collections/filecoin-data-portal"]
 	path = collections/filecoin-data-portal
 	url = https://github.com/davidgasquez/filecoin-data-portal.git
+[submodule "collections/dealbot"]
+	path = collections/dealbot
+	url = https://github.com/FilOzone/dealbot.git
